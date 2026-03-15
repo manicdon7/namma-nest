@@ -12,7 +12,7 @@ import {
   Building,
 } from "lucide-react";
 import type { Listing } from "@/types/listing";
-import { formatRent, formatPropertyType } from "@/lib/utils/formatter";
+import { formatRent, formatPropertyType, getMapUrl } from "@/lib/utils/formatter";
 
 interface ListingCardProps {
   listing: Listing;
@@ -78,7 +78,14 @@ export default function ListingCard({ listing, index, onSave, saved }: ListingCa
       <div className="space-y-3 px-5 pb-4">
         <div className="flex items-start gap-2 text-sm text-text-muted">
           <MapPin className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{listing.address}</span>
+          <a
+            href={getMapUrl(listing.address)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-primary hover:underline transition-colors"
+          >
+            {listing.address}
+          </a>
         </div>
 
         <div className="font-mono text-2xl font-bold text-primary">

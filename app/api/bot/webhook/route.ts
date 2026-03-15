@@ -294,8 +294,23 @@ bot.action("check_payment", async (ctx) => {
       await updateSessionStatus(session.sessionId, "paid");
       session.step = "searching";
 
+      let txLink = "";
+      try {
+        const verifyRes = await fetch(`${APP_URL}/api/payment/verify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: session.sessionId }),
+        });
+        const verifyData = await verifyRes.json();
+        if (verifyData.verification?.txUrl) {
+          txLink = `\n🔗 [View Transaction](${verifyData.verification.txUrl})`;
+        }
+      } catch {
+        /* ignore */
+      }
+
       await ctx.reply(
-        `✅ *Payment Confirmed on GOAT Testnet3!*\n\n` +
+        `✅ *Payment Confirmed on GOAT Testnet3!*${txLink}\n\n` +
           `🤖 Starting AI agent to search rentals...\n` +
           `Searching NoBroker, 99acres, MagicBricks, Housing.com...\n\n` +
           `⏱ This may take 30–60 seconds.`,

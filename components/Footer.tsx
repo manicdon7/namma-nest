@@ -45,7 +45,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="https://t.me/NammaNestBot"
+                  href="https://t.me/ThrxBot"
                   target="_blank"
                   className="flex items-center gap-1 text-sm text-text-muted transition-colors hover:text-primary"
                 >
@@ -83,7 +83,7 @@ export default function Footer() {
               <Github className="h-4 w-4" />
             </a>
             <a
-              href="https://t.me/NammaNestBot"
+              href="https://t.me/ThrxBot"
               target="_blank"
               rel="noopener noreferrer"
               className="text-text-muted transition-colors hover:text-primary"

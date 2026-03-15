@@ -103,13 +103,17 @@ export default function ListingsGrid({ listings, onSave, savedIds }: ListingsGri
           className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3"
         >
           {filtered.map((listing, i) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              index={i}
-              onSave={onSave}
-              saved={savedIds?.has(listing.id)}
-            />
+            <motion.div
+              key={listing.id || `listing-${i}`}
+              variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+            >
+              <ListingCard
+                listing={listing}
+                index={i}
+                onSave={onSave}
+                saved={savedIds?.has(listing.id)}
+              />
+            </motion.div>
           ))}
         </motion.div>
       ) : (

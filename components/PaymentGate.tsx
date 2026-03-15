@@ -106,13 +106,6 @@ export default function PaymentGate({
       });
       const data = await res.json();
 
-      if (data.cached && data.sessionId) {
-        setSessionId(data.sessionId);
-        setStep("success");
-        setTimeout(() => onSuccess(data.sessionId), 1200);
-        return;
-      }
-
       if (!res.ok) {
         throw new Error(
           data.debug ? `${data.error}: ${data.debug}` : data.error || "Failed to create session"
@@ -156,7 +149,7 @@ export default function PaymentGate({
       })) as string;
 
       setTxHash(txHashRaw);
-      startPolling(sessionId);
+      startPolling(sessionId, txHashRaw);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Transaction rejected";
       setError(msg.includes("rejected") ? "Transaction cancelled in wallet." : msg);
@@ -165,7 +158,7 @@ export default function PaymentGate({
   };
 
   // ── Step 3: Poll verify endpoint ────────────────────────────────────────────
-  const startPolling = (sid: string) => {
+  const startPolling = (sid: string, tx?: string) => {
     if (pollRef.current) clearInterval(pollRef.current);
 
     pollRef.current = setInterval(async () => {
@@ -173,11 +166,11 @@ export default function PaymentGate({
         const res = await fetch("/api/payment/verify", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: sid }),
+          body: JSON.stringify({ sessionId: sid, txHash: tx || undefined }),
         });
         const data = await res.json();
 
-        if (data.success) {
+        if (data.success || data.paid) {
           if (pollRef.current) clearInterval(pollRef.current);
           setStep("success");
           setTimeout(() => onSuccess(sid), 1500);
@@ -387,6 +380,17 @@ export default function PaymentGate({
                 <p className="text-sm text-text-muted">
                   Launching AI search...
                 </p>
+                {explorerTxUrl && (
+                  <a
+                    href={explorerTxUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 rounded-lg border border-primary/30 bg-primary/5 px-4 py-2 text-xs font-medium text-primary hover:bg-primary/10"
+                  >
+                    View Transaction on GOAT Explorer
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+                )}
               </motion.div>
             )}
 

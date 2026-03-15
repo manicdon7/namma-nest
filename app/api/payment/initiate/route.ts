@@ -3,7 +3,6 @@ import {
   findOrCreateUser,
   createSearchSession,
   createPayment,
-  findRecentDuplicateSession,
   getSearchSession,
   logError,
 } from "@/lib/db/queries";
@@ -59,18 +58,6 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await findOrCreateUser({ walletAddress });
-
-    const duplicate = await findRecentDuplicateSession(user._id.toString(), location);
-    if (duplicate && duplicate.status !== "failed") {
-      return NextResponse.json({
-        cached: true,
-        sessionId: duplicate._id.toString(),
-        contractAddress,
-        searchFeeWei,
-        chainId: 48816,
-        message: "Recent session found.",
-      });
-    }
 
     const session = await createSearchSession({
       userId: user._id.toString(),

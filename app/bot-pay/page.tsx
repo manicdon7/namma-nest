@@ -31,11 +31,14 @@ function BotPayContent() {
   const [account, setAccount] = useState<string>("");
   const [txHash, setTxHash] = useState<string>("");
   const [verification, setVerification] = useState<{
+    txHash?: string;
+    txUrl?: string;
     payer?: string;
     amountWei?: string;
     paidAt?: number;
     chainId?: number;
     network?: string;
+    paymentType?: string;
   } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [contractAddress, setContractAddress] = useState<string>("");
@@ -167,7 +170,8 @@ function BotPayContent() {
         ],
       });
 
-      setTxHash(tx as string);
+      const hash = tx as string;
+      setTxHash(hash);
       setPolling(true);
 
       // Poll /api/payment/verify until confirmed
@@ -179,7 +183,7 @@ function BotPayContent() {
           const res = await fetch("/api/payment/verify", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ sessionId }),
+            body: JSON.stringify({ sessionId, txHash: hash }),
           });
           const data = await res.json();
 
@@ -422,16 +426,17 @@ function BotPayContent() {
               <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4">
                 <p className="text-sm font-semibold text-primary mb-3">Payment Verification</p>
                 <div className="space-y-2 text-sm">
-                  {txHash && (
-                    <div className="flex justify-between items-center">
+                  {(verification?.txHash || txHash) && (
+                    <div className="flex justify-between items-center gap-2">
                       <span className="text-text-muted">Transaction</span>
                       <a
-                        href={`${EXPLORER}/tx/${txHash}`}
+                        href={verification?.txUrl || `${EXPLORER}/tx/${txHash}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="font-mono text-xs text-primary hover:underline truncate max-w-[180px]"
+                        title="View on GOAT Explorer"
                       >
-                        {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                        {(verification?.txHash || txHash).slice(0, 10)}...{(verification?.txHash || txHash).slice(-8)}
                       </a>
                     </div>
                   )}
@@ -468,6 +473,16 @@ function BotPayContent() {
                       <span className="text-text-muted">Network</span>
                       <span className="text-xs text-text">{verification.network}</span>
                     </div>
+                  )}
+                  {(verification?.txUrl || txHash) && (
+                    <a
+                      href={verification?.txUrl || `${EXPLORER}/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 flex items-center justify-center gap-1 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-xs font-medium text-primary hover:bg-primary/10"
+                    >
+                      View on GOAT Explorer <ExternalLink className="h-3 w-3" />
+                    </a>
                   )}
                 </div>
               </div>
