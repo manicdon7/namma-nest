@@ -1,6 +1,6 @@
 import type { SearchParams } from "@/types/search";
 import type { RawListing, PropertyType } from "@/types/listing";
-import { callOpenClaw } from "./agent";
+import { callLlm } from "@/lib/llm/client";
 
 function buildSearchPrompt(params: SearchParams): string {
   const typeLabel =
@@ -72,7 +72,7 @@ function parseListingsResponse(response: string): RawListing[] {
       listing_date: item.listing_date ? String(item.listing_date) : undefined,
     }));
   } catch {
-    console.error("Failed to parse OpenClaw response:", response.substring(0, 200));
+    console.error("Failed to parse LLM response:", response.substring(0, 200));
     return [];
   }
 }
@@ -99,6 +99,6 @@ function parseAmenities(val: unknown): string[] {
 
 export async function searchRentals(params: SearchParams): Promise<RawListing[]> {
   const prompt = buildSearchPrompt(params);
-  const response = await callOpenClaw(prompt);
+  const response = await callLlm(prompt);
   return parseListingsResponse(response);
 }

@@ -57,18 +57,23 @@ export async function POST(request: NextRequest) {
     let rawListings;
     try {
       rawListings = await runNammaNestAgent(searchParams);
-    } catch {
+    } catch (err) {
       // Retry once on failure
       try {
         rawListings = await runNammaNestAgent(searchParams);
-      } catch (retryError) {
-        await logError("openclaw_search", String(retryError), {
+      } catch (retryErr) {
+        await logError("ai_search", String(retryErr), {
           sessionId,
           location,
         });
         await updateSessionStatus(sessionId, "failed");
+        const msg = String(retryErr);
+        const isDev = process.env.NODE_ENV === "development";
         return NextResponse.json(
-          { error: "AI search failed. Please try again or contact support." },
+          {
+            error: "AI search failed. Please try again or contact support.",
+            ...(isDev && { debug: msg }),
+          },
           { status: 500 }
         );
       }

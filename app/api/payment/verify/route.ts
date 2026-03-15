@@ -43,9 +43,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         sessionStatus: "paid",
-        payer: info.payer,
-        amountWei: info.amount.toString(),
-        paidAt: info.timestamp,
+        paid: true,
+        verification: {
+          payer: info.payer,
+          amountWei: info.amount.toString(),
+          paidAt: info.timestamp,
+          chainId: 48816,
+          network: "GOAT Testnet3",
+        },
       });
     }
 

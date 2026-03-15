@@ -1,5 +1,5 @@
 import type { RawListing, ListingValidation } from "@/types/listing";
-import { callOpenClaw } from "./agent";
+import { callLlm } from "@/lib/llm/client";
 
 function buildValidationPrompt(listing: RawListing, searchLocation: string): string {
   return `Validate this rental listing. Check:
@@ -38,7 +38,7 @@ export async function validateSingleListing(
 ): Promise<{ listing: RawListing; validation: ListingValidation }> {
   try {
     const prompt = buildValidationPrompt(listing, searchLocation);
-    const response = await callOpenClaw(prompt);
+    const response = await callLlm(prompt);
     const validation = parseValidationResponse(response);
     return { listing, validation };
   } catch {

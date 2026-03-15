@@ -30,6 +30,13 @@ function BotPayContent() {
   const [step, setStep] = useState<Step>("connect");
   const [account, setAccount] = useState<string>("");
   const [txHash, setTxHash] = useState<string>("");
+  const [verification, setVerification] = useState<{
+    payer?: string;
+    amountWei?: string;
+    paidAt?: number;
+    chainId?: number;
+    network?: string;
+  } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string>("");
   const [contractAddress, setContractAddress] = useState<string>("");
   const [feeWei, setFeeWei] = useState<string>("");
@@ -180,11 +187,13 @@ function BotPayContent() {
             clearInterval(interval);
             setConfirmed(true);
             setPolling(false);
+            if (data.verification) setVerification(data.verification);
             setStep("success");
           } else if (attempts >= maxAttempts) {
             clearInterval(interval);
             setPolling(false);
-            // tx was sent but not confirmed in time — still show success with tx hash
+            // tx was sent but not confirmed in time — fetch verification once more
+            if (data.verification) setVerification(data.verification);
             setStep("success");
           }
         } catch {
@@ -408,6 +417,60 @@ function BotPayContent() {
                   View Transaction <ExternalLink className="h-3 w-3" />
                 </a>
               )}
+
+              {/* Payment / x402 Verification */}
+              <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4">
+                <p className="text-sm font-semibold text-primary mb-3">Payment Verification</p>
+                <div className="space-y-2 text-sm">
+                  {txHash && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-text-muted">Transaction</span>
+                      <a
+                        href={`${EXPLORER}/tx/${txHash}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-xs text-primary hover:underline truncate max-w-[180px]"
+                      >
+                        {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                      </a>
+                    </div>
+                  )}
+                  {verification?.payer && (
+                    <div className="flex justify-between items-center gap-2">
+                      <span className="text-text-muted">Payer</span>
+                      <span className="font-mono text-xs text-text truncate max-w-[160px]" title={verification.payer}>
+                        {verification.payer.slice(0, 6)}...{verification.payer.slice(-4)}
+                      </span>
+                    </div>
+                  )}
+                  {(verification?.amountWei || feeWei) && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-text-muted">Amount</span>
+                      <span className="font-medium text-text">
+                        {(Number(verification?.amountWei || feeWei) / 1e18).toFixed(7).replace(/\.?0+$/, "")} BTC
+                      </span>
+                    </div>
+                  )}
+                  {verification?.paidAt && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-text-muted">Confirmed</span>
+                      <span className="text-xs text-text">
+                        {new Date(verification.paidAt * 1000).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center">
+                    <span className="text-text-muted">Status</span>
+                    <span className="text-success font-medium">Verified on-chain</span>
+                  </div>
+                  {verification?.network && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-text-muted">Network</span>
+                      <span className="text-xs text-text">{verification.network}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               <div className="mt-6 rounded-xl border border-border bg-bg p-4">
                 <p className="text-sm font-medium text-text">Next Step</p>
